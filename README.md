@@ -1,7 +1,7 @@
 # UBP Teleoperation
 
 ## 📖 프로젝트 개요
-UBP Teleoperation & Vision 프로젝트는 **착용형 슈트 Reader**와 **비전 기반 헤드 트래킹**을 통합하여,  
+UBP Teleoperation & Vision 프로젝트는 **착용형 슈트 Leader**와 **비전 기반 헤드 트래킹**을 통합하여,  
 사람의 움직임을 로봇에 자연스럽게 전달하는 것을 목표로 합니다.  
 
 이 시스템은 **Dynamixel 모터 슈트**를 통해 사람의 팔/몸 움직임을 캡처하고,  
@@ -21,7 +21,7 @@ UBP Teleoperation & Vision 프로젝트는 **착용형 슈트 Reader**와 **비�
 
 ## 시스템 구성
 
-### 1. Teleoperation Reader(슈트 제어)
+### 1. Teleoperation Leader(슈트 제어)
 - Dynamixel 모터(1~14번)를 이용한 착용형 슈트
 - 슈트에서 읽은 모터 위치를 `/ubp/body/cmd` 토픽으로 퍼블리시
 - 로봇의 바디 모터 제어 입력으로 사용
