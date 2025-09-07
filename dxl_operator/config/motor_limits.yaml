@@ -1,0 +1,116 @@
+# Motor limits configuration
+# You can specify limits in either degrees or encoder ticks
+# If both are provided, ticks take precedence for more precise control
+
+# Configuration options:
+# 1. angle_deg: degrees (will be converted to ticks using center=2048)
+# 2. tick: raw encoder values (0-4095 for most Dynamixel motors)
+# 3. Both: ticks take precedence
+
+# Head motor limits (uniform for both yaw and pitch)
+head:
+  max_angle_deg: 60.0
+  min_angle_deg: -60.0
+  # Optional: specify exact tick values
+  # max_tick: 2548  # 2048 + (60 * 4095/360)
+  # min_tick: 1548  # 2048 - (60 * 4095/360)
+
+# Body motor limits (individual limits for each motor)
+body:
+  motor_1:
+    id: 1
+    max_angle_deg: 90.0
+    min_angle_deg: -90.0
+    # max_tick: 3072    # 2048 + (90 * 4095/360) = 2048 + 1024
+    # min_tick: 1024    # 2048 - (90 * 4095/360) = 2048 - 1024
+    name: "left_shoulder_pitch"
+  
+  motor_2:
+    id: 2
+    max_angle_deg: 90.0
+    min_angle_deg: -90.0
+    # max_tick: 4095    # Full range
+    # min_tick: 1707    # 2048 - (30 * 4095/360)
+    name: "right_shoulder_pitch"
+  
+  motor_3:
+    id: 3
+    max_angle_deg: 0.0
+    min_angle_deg: -90
+    name: "left_shoulder_roll"
+  
+  motor_4:
+    id: 4
+    max_angle_deg: 90.0
+    min_angle_deg: 0.0
+    name: "right_shoulder_roll"
+  
+  motor_5:
+    id: 5
+    max_angle_deg: 90.0
+    min_angle_deg: -90.0
+    name: "left_shoulder_yaw"
+  
+  motor_6:
+    id: 6
+    max_angle_deg: 90.0
+    min_angle_deg: -90.0
+    name: "right_shoulder_yaw"
+  
+  motor_7:
+    id: 7
+    max_angle_deg: 100.0
+    min_angle_deg: 0.0
+    name: "left_elbow_pitch"
+  
+  motor_8:
+    id: 8
+    max_angle_deg: 0.0
+    min_angle_deg: -100.0
+    name: "right_elbow_pitch"
+  
+  motor_9:
+    id: 9
+    max_angle_deg: 90.0
+    min_angle_deg: -90.0
+    name: "left_elbow_yaw"
+  
+  motor_10:
+    id: 10
+    max_angle_deg: 90.0
+    min_angle_deg: -90.0
+    name: "right_elbow_yaw"
+  
+  motor_11:
+    id: 11
+    max_angle_deg: 90.0
+    min_angle_deg: -90.0
+    name: "left_waist_pitch"
+  
+  motor_12:
+    id: 12
+    max_angle_deg: 90.0
+    min_angle_deg: -90.0
+    name: "right_waist_pitch"
+  
+  motor_13:
+    id: 13
+    max_angle_deg: 60.0
+    min_angle_deg: -60.0
+    name: "left_gripper"
+  
+  motor_14:
+    id: 14
+    max_angle_deg: 60.0
+    min_angle_deg: -60.0
+    name: "right_gripper"
+
+# Example with tick values (more precise):
+# body:
+#   motor_special:
+#     id: 99
+#     max_tick: 3500    # Exact encoder limit
+#     min_tick: 800     # Exact encoder limit  
+#     max_angle_deg: 180.0  # Will be ignored if ticks are provided
+#     min_angle_deg: -180.0 # Will be ignored if ticks are provided
+#     name: "special_joint"
