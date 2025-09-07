@@ -29,7 +29,7 @@ class DynamixelController(Node):
         # ----------------------------
         # Parameters
         # ----------------------------
-        self.declare_parameter('port', '/dev/ttyUSB0')
+        self.declare_parameter('port', '/dev/ttyFollower')
         self.declare_parameter('baudrate', 1000000)
         self.declare_parameter('protocol_version', 2.0)
         self.declare_parameter('control_frequency', 50.0)
@@ -37,12 +37,14 @@ class DynamixelController(Node):
         # Motor configurations - 추후 확장 가능
         self.declare_parameter('head_yaw_id', 15)
         self.declare_parameter('head_pitch_id', 16)
-        self.declare_parameter('body_ids', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])  # 추후 body 모터들
+        self.declare_parameter('body_ids', [2, 4, 6, 8, 10, 12, 14])  # 추후 body 모터들
+        self.declare_parameter('left_arm', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+        self.declare_parameter('right_arm',[2, 4, 6, 8, 10, 12, 14])
         
         # PID gains
         self.declare_parameter('pid_kp', 0.8)
         self.declare_parameter('pid_ki', 0.01)
-        self.declare_parameter('pid_kd', 0.05)
+        self.declare_parameter('pid_kd', 0.2)
         
         # Movement limits
         self.declare_parameter('max_angle_deg', 60.0)

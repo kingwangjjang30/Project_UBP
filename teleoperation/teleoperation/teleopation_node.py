@@ -29,13 +29,13 @@ class TeleoperationSuitController(Node):
         # ----------------------------
         # Parameters
         # ----------------------------
-        self.declare_parameter('suit_port', '/dev/ttyUSB1')  # 슈트용 별도 포트
+        self.declare_parameter('suit_port', '/dev/ttyLeader')  # 슈트용 별도 포트
         self.declare_parameter('suit_baudrate', 1000000)
         self.declare_parameter('protocol_version', 2.0)
         self.declare_parameter('read_frequency', 50.0)  # 엔코더 읽기 주파수
         
         # 슈트 모터 ID들 (1~14)
-        self.declare_parameter('suit_motor_ids', list(range(1, 15)))
+        self.declare_parameter('suit_motor_ids', [2, 4, 6, 8, 10, 12, 14])
         
         # 초기화 관련 파라미터
         self.declare_parameter('init_profile_velocity', 50)  # 초기화 시 움직임 속도
@@ -293,24 +293,27 @@ class TeleoperationSuitController(Node):
             return
         
         if self.read_present_positions():
-            # Publish encoder values as raw ticks
+            # Publish encoder values as degrees (instead of raw ticks)
             encoder_msg = Float64MultiArray()
             
             with self.read_lock:
-                # Sort by motor ID for consistent ordering
                 sorted_ids = sorted(self.suit_motor_ids)
-                encoder_msg.data = [float(self.current_positions[motor_id]) for motor_id in sorted_ids]
+                encoder_msg.data = [
+                    self.tick_to_deg(self.current_positions[motor_id]) 
+                    for motor_id in sorted_ids
+                ]
             
             # Add dimension info
             dim = MultiArrayDimension()
-            dim.label = "suit_encoders"
+            dim.label = "suit_encoders_deg"
             dim.size = len(self.suit_motor_ids)
             dim.stride = len(self.suit_motor_ids)
             encoder_msg.layout.dim.append(dim)
             
+            # /ubp/body/cmd 에 degree 값 퍼블리시
             self.body_cmd_pub.publish(encoder_msg)
             
-            # Also publish as joint states (in degrees)
+            # Also publish as joint states (이미 degree 단위임)
             self.publish_joint_states()
 
     def publish_joint_states(self):

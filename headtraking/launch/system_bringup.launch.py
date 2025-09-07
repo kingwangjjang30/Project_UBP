@@ -40,6 +40,13 @@ def generate_launch_description():
             output='screen'
         ),
 
+        Node(
+            package='teleoperation',
+            executable='suit_controller',
+            name='teleop',
+            output='screen'
+        ),
+
         # 4. realsense2_camera - rs_launch.py 포함
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(realsense_launch_file),
