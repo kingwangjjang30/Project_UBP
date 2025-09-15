@@ -35,7 +35,7 @@ class TeleoperationSuitController(Node):
         self.declare_parameter('read_frequency', 50.0)  # 엔코더 읽기 주파수
         
         # 슈트 모터 ID들 (1~14)
-        self.declare_parameter('suit_motor_ids', [2, 4, 6, 8, 10, 12, 14])
+        self.declare_parameter('suit_motor_ids', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
         
         # 초기화 관련 파라미터
         self.declare_parameter('init_profile_velocity', 50)  # 초기화 시 움직임 속도

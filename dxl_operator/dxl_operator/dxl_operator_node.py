@@ -37,14 +37,15 @@ class DynamixelController(Node):
         # Motor configurations - 추후 확장 가능
         self.declare_parameter('head_yaw_id', 15)
         self.declare_parameter('head_pitch_id', 16)
-        self.declare_parameter('body_ids', [2, 4, 6, 8, 10, 12, 14])  # 추후 body 모터들
+        self.declare_parameter('body_ids', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])  # 추후 body 모터들
         self.declare_parameter('left_arm', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
         self.declare_parameter('right_arm',[2, 4, 6, 8, 10, 12, 14])
-        
+        self.declare_parameter('grippers', [13, 14])
+
         # PID gains
-        self.declare_parameter('pid_kp', 0.8)
-        self.declare_parameter('pid_ki', 0.01)
-        self.declare_parameter('pid_kd', 0.2)
+        self.declare_parameter('pid_kp', 0.9)
+        self.declare_parameter('pid_ki', 0.0)
+        self.declare_parameter('pid_kd', 0.5)
         
         # Movement limits
         self.declare_parameter('max_angle_deg', 60.0)
@@ -246,25 +247,49 @@ class DynamixelController(Node):
         
         self.get_logger().debug(f'Head cmd received: yaw={yaw_deg:.1f}°, pitch={pitch_deg:.1f}°')
 
+    def constrain(self, value, min_val, max_val):
+        return max(min_val, min(max_val, value))
+        
     def body_cmd_callback(self, msg: Float64MultiArray):
         """Handle body command (degrees for each body motor)"""
         if len(msg.data) != len(self.body_ids):
             self.get_logger().warn(f'Body cmd message should contain {len(self.body_ids)} values')
             return
         
+        # 각 모터 ID별 제한 범위 설정
+        motor_limits = {
+            
+
+            3: (-170, 0),    # 모터 3: -30° ~ 30°
+            4: (0, 170),
+            7: (-90, 0),    # 모터 7: -45° ~ 45°
+            8: (0, 90),
+            11: (-90, 90),   # 모터 11: -90° ~ 90°
+            12: (-90, 90),
+            # 다른 모터들은 기본값 사용
+        }
+        
         with self.control_lock:
             for i, motor_id in enumerate(self.body_ids):
                 angle_deg = msg.data[i]
-                # Apply limits if needed (could be motor-specific)
-                angle_deg = max(-self.max_angle_deg, min(self.max_angle_deg, angle_deg))
+                
+                # 모터별 개별 제한 적용
+                if motor_id in motor_limits:
+                    min_angle, max_angle = motor_limits[motor_id]
+                    angle_deg = self.constrain(angle_deg, min_angle, max_angle)
+                else:
+                    # 기본 제한 적용
+                    angle_deg = self.constrain(angle_deg, -self.max_angle_deg, self.max_angle_deg)
+                
                 self.target_positions[motor_id] = self.deg_to_tick(angle_deg)
             self.last_body_cmd_time = time.time()
             self.body_at_home = False
         
         self.get_logger().debug(f'Body cmd received for {len(self.body_ids)} motors')
 
+        
     def control_loop(self):
-        """Main control loop with PID"""
+        """Main control loop with PID (except for motors 13, 14)"""
         current_time = time.time()
         dt = current_time - self.last_control_time
         self.last_control_time = current_time
@@ -278,20 +303,29 @@ class DynamixelController(Node):
         # Calculate PID outputs and update goal positions
         new_goals = {}
         
+        # Motors that bypass PID control (direct position control)
+        direct_control_motors = [13, 14]
+        
         with self.control_lock:
             for motor_id in self.all_motor_ids:
                 current_pos = self.current_positions[motor_id]
                 target_pos = self.target_positions[motor_id]
                 
-                # PID control
-                error = target_pos - current_pos
-                pid_output = self.pid_controllers[motor_id].compute(error, dt)
-                
-                # Update goal position with PID output
-                new_goal = current_pos + int(pid_output)
-                
-                # Clamp to valid range
-                new_goal = max(0, min(int(self.TICKS_PER_REV), new_goal))
+                if motor_id in direct_control_motors:
+                    # Direct position control for motors 13, 14
+                    new_goal = target_pos
+                    # Clamp to valid range
+                    new_goal = max(0, min(int(self.TICKS_PER_REV), new_goal))
+                else:
+                    # PID control for other motors
+                    error = target_pos - current_pos
+                    pid_output = self.pid_controllers[motor_id].compute(error, dt)
+                    
+                    # Update goal position with PID output
+                    new_goal = current_pos + int(pid_output)
+                    
+                    # Clamp to valid range
+                    new_goal = max(0, min(int(self.TICKS_PER_REV), new_goal))
                 
                 new_goals[motor_id] = new_goal
                 self.goal_positions[motor_id] = new_goal
